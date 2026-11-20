@@ -1,0 +1,31 @@
+name: Build Windows
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: ASIO SDK herunterladen
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri "https://download.steinberg.net/sdk_downloads/ASIO-SDK_2.3.4_2025-10-15.zip" -OutFile asio.zip
+          Expand-Archive asio.zip -DestinationPath ${{ github.workspace }}\asio
+          Get-ChildItem ${{ github.workspace }}\asio
+
+      - name: Konfigurieren
+        run: cmake -Bignore/build -A x64 -DCMAKE_BUILD_TYPE=Release "-DBESPOKE_ASIO_SDK_LOCATION=${{ github.workspace }}/asio/ASIO-SDK_2.3.4_2025-10-15.zip"
+
+      - name: Bauen
+        run: cmake --build ignore/build --parallel 4 --config Release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BespokeSynth-Windows
+          path: ignore/build/Source/BespokeSynth_artefacts/Release
