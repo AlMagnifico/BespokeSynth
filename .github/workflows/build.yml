@@ -11,7 +11,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
       - name: ASIO SDK herunterladen
         shell: pwsh
         run: |
@@ -20,7 +22,7 @@ jobs:
           Get-ChildItem ${{ github.workspace }}\asio
 
       - name: Konfigurieren
-        run: cmake -Bignore/build -A x64 -DCMAKE_BUILD_TYPE=Release "-DBESPOKE_ASIO_SDK_LOCATION=${{ github.workspace }}/asio/ASIOSDK"
+        run: cmake -Bignore/build -A x64 -DCMAKE_BUILD_TYPE=Release "-DBESPOKE_PYTHON_ROOT=$env:pythonLocation" "-DBESPOKE_ASIO_SDK_LOCATION=${{ github.workspace }}/asio/ASIOSDK"
 
       - name: Bauen
         run: cmake --build ignore/build --parallel 4 --config Release
